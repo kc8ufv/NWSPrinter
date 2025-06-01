@@ -2,7 +2,23 @@ NWSPrinter
 Automatic Weather Warning Printer program
 Author: Chrissy Hart, KC8UFV, Lucas County AEC for Mesh & IT
 
-Automatically downloads and prints weather warnings on a receipt printer
+Automatically check for and print weather warnings from the National Weather Service
+
+Warnings are downloaded via the NWS API
+
+This script is designed to use a common Epson receipt printer, as commonly used with 
+cash registers. It was tested with an Epson TM-88VI receipt printer connected via USB
+but other similar receipt printers should also work. Printing speed will vary from printer to printer.
+ 
+Most Epson recept printers support 2 cash drawer outputs on a 6P6C RJ11 connector.
+These can be repurposed to drive a common 2 tone doorbell chime.
+The interesting pins for our purposes are on the center 4 pins, so an old 2 line
+telephone cord can be used. With the pins on the connector up, and the cable towards
+you, count the positions from left to right. 
+Connect the "Rear" or single chime terminal on the chime to pin 2 (Drawer 1)
+Connect the "Front" or double chime terminal on the chime to pin 5  (Drawer 2)
+Connect the Common terminal on the chime to pin 4.  (+24V)
+This combination will sound a single chime for SVR warnings, and a double for TOR
 
 To install, first configure the file for your local installation by editing the variables near the start of NWSPrinter
 You will need to know what the device name of your local Epson printer is. If it's the only USB printer, the default should be correct.
