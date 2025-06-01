@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Note: This is only an automatic launcher for NWSPrnter. It only starts NWSPrinter if it isn't already running.
+
+if ! pgrep -x "NWSPrinter" > /dev/null; then
+/var/local/sbin/NWSPrinter
+fi
+

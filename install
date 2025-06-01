@@ -1,0 +1,22 @@
+#!/bin/bash
+
+mkdir /usr/local/WXAlert
+cp *.txt /usr/local/WXAlert/
+cp NWSPrinter /usr/local/sbin/
+cp warning /usr/local/sbin/NWSWarnings
+(crontab -l ; echo "*/3 * * * * /usr/local/sbin/NWSWarnings") | crontab -
+echo "The program has been installed in /usr/local/sbin" 
+echo "The ASCII Art graphics for the headers are in /usr/local/WXAlert/"
+echo "These are used for quick visual identification of the warning."
+echo ""
+echo "If you didn't update the printer file name, NWS Office, and location,"
+echo "please edit /usr/local/sbin/NWSPrinter with the correct values."
+echo ""
+echo "The startup script has been installed in the crontab to automatically"
+echo "It will check if the printer file is running every 3 minutes, and start "
+echo "it if neccessary. "
+
+
+ 
+
+

@@ -1,0 +1,95 @@
+#!/bin/bash
+# WXAlert - Automatic Weather Warning printer
+#
+# Written by Chrissy Hart, KC8UFV, Lucas County AEC for Mesh & IT
+# 
+# Automatically check for and print weather warnings from the National Weather Service
+# Warnings are downloaded via the NWS API
+# This script is designed to use a common Epson receipt printer, as commonly used with 
+# cash registers. It was tested with an Epson TM88VI receipt printer connected via USB
+# but other similar receipt printers should also work.  
+# 
+# Most Epson recept printers support 2 cash drawer outputs on a 6P6C RJ11 connector.
+# These can be repurposed to drive a common 2 tone doorbell chime.
+# The interesting pins for our purposes are on the center 4 pins, so an old 2 line
+# telephone cord can be used. With the pins on the connector up, and the cable towards
+# you, count the positions from left to right. 
+# Connect the "Rear" or single chime terminal on the chime to pin 2 (Drawer 1)
+# Connect the "Front" or double chime terminal on the chime to pin 5  (Drawer 2)
+# Connect the Common terminal on the chime to pin 4.  (+24V)
+# This combination will sound a single chime for SVR warnings, and a double for TOR
+
+
+# define variables - Printer
+PRINTER=/dev/usb/lp1
+# Weather office code
+WX=CLE
+# Location to find
+LOCATION="Lucas County"
+# Logfile location
+LOGFILE="/var/log/WXWarnings"
+# Time to wait between checks in seconds - don't overload your connection or the NWS API
+SLEEPTIME=25
+
+
+
+# Setup - set working directory to temporary files, create empty warning files
+cd /tmp
+touch /tmp/SVR
+touch /tmp/TOR
+
+# Setup Printing function
+PRT-WRN() {
+#determine warning type, and print header graphic. Also, send drawer kick command for optional doorbell chime
+
+
+if grep -q "SVR" "/tmp/latest"; then
+cat /root/SVR.txt >>$PRINTER
+printf "\ep0~~" >>$PRINTER     # Activate pin 2/drawer 1
+cat /tmp/latest > /tmp/SVR     # Copy to the currently downloaded and acted on SVR
+fi
+if grep -q "TOR" "/tmp/latest"; then
+cat /root/TOR.txt >>$PRINTER
+printf "\ep1~~" >>$PRINTER     # Activate pin 5/drawer 2
+cat /tmp/latest > /tmp/TOR     # Copy the currently downloaded and acted on TOR
+fi
+cat /tmp/latest >> $LOGFILE              # Also copy it to the Skywarn logfile
+
+cat latest | grep issuanceTime | cut -c 22- | rev | cut -c 12- | rev >>$PRINTER   # Find and print the issuance time
+echo >>$PRINTER
+cat latest | grep productName | cut -c 21- | rev | cut -c 3- | rev >>$PRINTER     # Find and print the type of warning
+echo >>$PRINTER
+cat latest | grep productText | cut -c 21- | awk '{gsub(/\\n/,"\n")}1' - >>$PRINTER   # Print the warning text
+printf " \n \n \ei\n \n" >>$PRINTER                                                   # Add a few blank lines, and cut
+
+}
+
+# Main loop - 3 products to check individually, rechecking every 30 seconds
+while true
+do
+
+# SVR - SeVeRe thunderstorm warning 
+wget https://api.weather.gov/products/types/SVR/locations/$WX/latest
+if grep -q $LOCATION "/tmp/latest"; then # Is it for my location?
+if ! cmp -s "/tmp/latest" "/tmp/SVR"; then   # Have I already downloaded and printed this one?
+PRT-WRN                                      # Act on the new warning
+fi	
+fi
+rm /tmp/latest                               # Cleanup the download to get the next one
+
+# TOR - Repeat for TORnadoes
+
+wget https://api.weather.gov/products/types/TOR/locations/$WX/latest
+if grep -q $LOCATION "/tmp/latest"; then
+if ! cmp -s "/tmp/latest" "/tmp/TOR"; then
+PRT-WRN
+fi
+fi
+
+
+rm /tmp/latest
+
+# And now, wait 25 seconds before trying again
+sleep $SLEEPTIME
+done
+

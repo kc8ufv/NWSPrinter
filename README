@@ -1,0 +1,17 @@
+NWSPrinter
+Automatic Weather Warning Printer program
+Author: Chrissy Hart, KC8UFV, Lucas County AEC for Mesh & IT
+
+Automatically downloads and prints weather warnings on a receipt printer
+
+To install, first configure the file for your local installation by editing the variables near the start of NWSPrinter
+You will need to know what the device name of your local Epson printer is. If it's the only USB printer, the default should be correct.
+You will also need to know the 3 letter code for your weather office, and a text string that will appear in only the warnings you are 
+interested in. Reference previously issued warnings from your weather office. If you want all warnings from the specified office to 
+print, set LOCATION="productText"
+
+After configuring the script for your area, install it with the command "sudo bash install". Everything will be automated at that point. 
+If you need to change settigns after installation, simply edit /usr/local/sbin/NWSPrinter and either kill the process NWSPrinter, or
+restart your computer.
+
+All items sent to the printer will be logged in the specified logfile.
